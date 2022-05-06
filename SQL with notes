@@ -1,0 +1,167 @@
+-- A crime has taken place and the detective needs your help. The detective gave you the crime scene report, but you somehow lost it. You vaguely remember that the crime was a ​murder​ that occurred sometime on ​Jan.15, 2018​ and that it took place in ​SQL City​. Start by retrieving the corresponding crime scene report from the police department’s database.
+
+SELECT
+*
+FROM
+crime_scene_report;
+--needed to see available data before filtering
+
+SELECT
+*
+FROM
+crime_scene_report
+WHERE
+type = 'murder' and
+date = 20180115 and
+city = 'SQL City';
+
+-- Security footage shows that there were 2 witnesses. The first witness lives at the last house on "Northwestern Dr". The second witness, named Annabel, lives somewhere on "Franklin Ave".
+
+SELECT
+*
+FROM
+person
+WHERE
+address_street_name = 'Northwestern Dr'
+ORDER BY
+address_number DESC;
+
+--14887	Morty Schapiro	118009	4919	Northwestern Dr	111564949
+
+SELECT
+*
+FROM
+person
+WHERE
+address_street_name = 'Franklin Ave' AND
+name LIKE 'Annabel%';
+
+--16371	Annabel Miller	490173	103	Franklin Ave	318771143
+
+SELECT
+*
+FROM
+interview
+WHERE
+person_id = '14887';
+
+--	I heard a gunshot and then saw a man run out. He had a "Get Fit Now Gym" bag. The membership number on the bag started with "48Z". Only gold members have those bags. The man got into a car with a plate that included "H42W".
+
+SELECT
+*
+FROM
+interview
+WHERE
+person_id = '16371';
+
+-- I saw the murder happen, and I recognized the killer from my gym when I was working out last week on January the 9th.
+
+SELECT
+m.name, m.person_id, c.check_in_date
+FROM
+get_fit_now_member as m
+LEFT JOIN
+get_fit_now_check_in as c
+ON c.membership_id=m.id
+WHERE
+c.check_in_date = '20180109' AND
+m.membership_status = 'gold' AND
+m.membership_id LIKE '48Z%';
+
+-- Joe Germuska	28819	20180109
+-- Jeremy Bowers	67318	20180109
+
+SELECT
+*
+FROM
+DRIVERS_LICENSE
+WHERE 
+plate_number LIKE '%H42W%';
+
+-- 183779	21	65	blue	blonde	female	H42W0X	Toyota	Prius
+-- 423327	30	70	brown	brown		male		0H42W2	Chevrolet	Spark LS
+-- 664760	21	71	black	black		male		4H42WR	Nissan	Altima
+
+--eliminated female in next search, due to witness say male
+
+SELECT
+*
+FROM
+person
+WHERE
+license_id = '423327' OR
+license_id = '664760';
+
+-- 51739	Tushar Chandra	664760	312	Phi St	137882671
+-- 67318	Jeremy Bowers	423327	530	Washington Pl, Apt 3A	871539279
+-- Jeremy was returned in above member info query, will pursue exploring his data further.  
+
+SELECT
+*
+FROM
+Interview
+WHERE
+person_id = '67318';
+
+--I was hired by a woman with a lot of money. I don't know her name but I know she's around 5'5" (65") or 5'7" (67"). She has red hair and she drives a Tesla Model S. I know that she attended the SQL Symphony Concert 3 times in December 2017.
+
+SELECT
+*
+FROM
+drivers_license
+WHERE
+gender = 'female' AND
+height < '68' AND
+hair_color = 'red'AND
+car_make = 'Tesla' AND
+car_model = 'Model S';
+
+--id	age	height	eye_color	hair_color	gender	plate_number	car_make	car_model
+--202298	68	66	green	red	female	500123	Tesla	Model S
+--291182	65	66	blue	red	female	08CM64	Tesla	Model S
+--918773	48	65	black	red	female	917UU3	Tesla	Model S
+
+SELECT
+*, COUNT(person_id)
+FROM
+facebook_event_checkin
+WHERE
+date LIKE '201712%' AND
+event_name LIKE '%Symphony%' 
+GROUP BY
+person_id
+ORDER BY 
+COUNT(person_id) DESC;
+
+--Indvl attnd = 3
+--24556	1143	SQL Symphony Concert	20171224	3
+--99716	1143	SQL Symphony Concert	20171229	3
+
+SELECT
+*
+FROM
+person
+WHERE
+id = '24556' OR
+id = '99716';
+
+--24556	Bryan Pardo	101191	703	Machine Ln	816663882
+--99716	Miranda Priestly	202298	1883	Golden Ave	987756388
+-- miranda license matches a tesla ownr abv. chkng intvw
+
+SELECT
+*
+FROM
+Interview
+WHERE
+person_id = '99716';
+
+--No data returned
+--Miranda wasnt invwd but all signs point to her. checking against solution table
+
+INSERT INTO solution VALUES (1, 'Miranda Priestly');
+        
+        SELECT value FROM solution;
+
+--Congrats, you found the brains behind the murder! Everyone in SQL City hails you as the greatest SQL detective of all time. Time to break out the champagne!
+--WOOOOOOOO!!!! that was fun
